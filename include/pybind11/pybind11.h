@@ -30,8 +30,12 @@
 #endif
 
 #include "attr.h"
-
 NAMESPACE_BEGIN(pybind11)
+template <typename Iterator,
+          typename ValueType = decltype(*std::declval<Iterator>()),
+          typename... Extra>
+iterator make_iterator(Iterator first, Iterator last, Extra &&... extra);
+template <typename Type, typename... Extra> iterator make_iterator(Type &value, Extra&&... extra);
 
 /// Wraps an arbitrary C++ function/method/lambda function/.. into a callable Python object
 class cpp_function : public function {
@@ -954,6 +958,9 @@ public:
         this->def("__eq__", [](const Type &value, Type *value2) { return value2 && value == *value2; });
         this->def("__ne__", [](const Type &value, Type *value2) { return !value2 || value != *value2; });
         this->def("__hash__", [](const Type &value) { return (int) value; });
+        this->def("__iter__", [entries] (void) {
+            return make_iterator(entries->begin(), entries->end());
+        });
         m_entries = entries;
     }
 
@@ -1038,7 +1045,7 @@ NAMESPACE_END(detail)
 template <typename... Args> detail::init<Args...> init() { return detail::init<Args...>(); }
 
 template <typename Iterator,
-          typename ValueType = decltype(*std::declval<Iterator>()),
+          typename ValueType,
           typename... Extra>
 iterator make_iterator(Iterator first, Iterator last, Extra &&... extra) {
     typedef detail::iterator_state<Iterator> state;

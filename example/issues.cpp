@@ -138,4 +138,15 @@ void init_issues(py::module &m) {
     } catch (std::runtime_error &) {
         /* All good */
     }
+
+  enum MY_ENUM : uint32_t {
+    FOO = 4,
+    BAR = 0xC0FFEE
+  };
+
+  pybind11::enum_<MY_ENUM>(m2, "MY_ENUM")
+    .value("FOO",  MY_ENUM::FOO)
+    .value("BAR", MY_ENUM::BAR)
+    .export_values();
+
 }
